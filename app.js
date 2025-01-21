@@ -19,10 +19,24 @@ const upload = multer({
   dest: "uploads/", // Temporary storage for uploaded files
 });
 
-app.use(express.static("public"));
-app.use(express.json());
+function deleteFilesInDirectory(directory) {
+  fs.readdir(directory, (err, files) => {
+    if (err) throw err;
+
+    for (const file of files) {
+      fs.unlink(path.join(directory, file), (err) => {
+        if (err) throw err;
+      });
+    }
+  });
+}
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 // PDF Upload and Text Extraction
 app.post("/upload/pdf", upload.single("document"), (req, res) => {
+  deleteFilesInDirectory("./uploads");
   const pdfPath = req.file.path;
   const dataBuffer = fs.readFileSync(pdfPath);
   pdfParse(dataBuffer)
